@@ -6,3 +6,53 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  cash      Float    @default(100000)
+  rank      String   @default("Beginner Trader")
+  createdAt DateTime @default(now())
+
+  trades   Trade[]
+  holdings PortfolioHolding[]
+}
+
+model Stock {
+  symbol      String   @id
+  name        String
+  price       Float
+  change      Float    @default(0)
+  lastUpdated DateTime @default(now())
+
+  trades   Trade[]
+  holdings PortfolioHolding[]
+}
+
+model Trade {
+  id          String   @id @default(cuid())
+  type        String
+  quantity    Int
+  price       Float
+  timestamp   DateTime @default(now())
+
+  userId      String
+  stockSymbol String
+  user        User     @relation(fields: [userId], references: [id])
+  stock       Stock    @relation(fields: [stockSymbol], references: [symbol])
+}
+
+model PortfolioHolding {
+  id          String @id @default(cuid())
+  quantity    Int
+  avgBuyPrice Float
+
+  userId      String
+  stockSymbol String
+  user        User   @relation(fields: [userId], references: [id])
+  stock       Stock  @relation(fields: [stockSymbol], references: [symbol])
+
+  @@unique([userId, stockSymbol])
+}
