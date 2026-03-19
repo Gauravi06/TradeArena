@@ -28,13 +28,7 @@ export class TradesService {
 
     // Record the trade
     await this.prisma.trade.create({
-      data: {
-        type: 'buy',
-        quantity,
-        price,
-        userId,
-        stockSymbol: symbol,
-      },
+      data: { type: 'buy', quantity, price, userId, stockSymbol: symbol },
     });
 
     // Update or create holding
@@ -55,7 +49,6 @@ export class TradesService {
       });
     }
 
-    // Deduct cash
     const newCash = user.cash - totalCost;
     await this.prisma.user.update({
       where: { id: userId },
@@ -63,5 +56,48 @@ export class TradesService {
     });
 
     return { message: 'Trade successful', cash: newCash };
+  }
+
+  async getPortfolio(userId: string) {
+    const holdings = await this.prisma.portfolioHolding.findMany({
+      where: { userId },
+      include: { stock: true },
+    });
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    let totalValue = 0;
+    let totalCost = 0;
+
+    const enriched = await Promise.all(
+      holdings.map(async (holding) => {
+        const { price } = await this.stocksService.getPrice(holding.stockSymbol);
+        const currentValue = price * holding.quantity;
+        const costBasis = holding.avgBuyPrice * holding.quantity;
+        const pnl = currentValue - costBasis;
+        const pnlPct = (pnl / costBasis) * 100;
+
+        totalValue += currentValue;
+        totalCost += costBasis;
+
+        return {
+          symbol: holding.stockSymbol,
+          quantity: holding.quantity,
+          avgBuyPrice: holding.avgBuyPrice,
+          currentPrice: price,
+          currentValue,
+          pnl,
+          pnlPct,
+        };
+      })
+    );
+
+    return {
+      holdings: enriched,
+      cash: user?.cash ?? 0,
+      totalValue,
+      totalCost,
+      totalPnl: totalValue - totalCost,
+    };
   }
 }

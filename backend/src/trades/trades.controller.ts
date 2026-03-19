@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Headers, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Get, Body, Headers, UnauthorizedException } from '@nestjs/common';
 import { TradesService } from './trades.service';
 import * as jwt from 'jsonwebtoken';
 
@@ -15,5 +15,13 @@ export class TradesController {
     const token = auth.replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET ?? 'secret') as any;
     return this.tradesService.buyStock(decoded.userId, body.symbol, body.quantity);
+  }
+
+  @Get('portfolio')
+  async portfolio(@Headers('authorization') auth: string) {
+    if (!auth) throw new UnauthorizedException();
+    const token = auth.replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET ?? 'secret') as any;
+    return this.tradesService.getPortfolio(decoded.userId);
   }
 }
