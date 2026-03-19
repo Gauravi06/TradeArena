@@ -15,8 +15,10 @@ export default function StockPage() {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
+  const [selling, setSelling] = useState(false);
   const [message, setMessage] = useState('');
   const [cash, setCash] = useState(0);
+  const [sharesOwned, setSharesOwned] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -26,7 +28,11 @@ export default function StockPage() {
     }
     setCash(Number(localStorage.getItem('cash')) || 0);
     fetchStock();
-    const interval = setInterval(fetchStock, 30000);
+    fetchHolding();
+    const interval = setInterval(() => {
+      fetchStock();
+      fetchHolding();
+    }, 30000);
     return () => clearInterval(interval);
   }, [symbol]);
 
@@ -42,6 +48,18 @@ export default function StockPage() {
     }
   };
 
+  const fetchHolding = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/trades/portfolio', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      const holding = data.holdings.find((h: any) => h.symbol === symbol);
+      setSharesOwned(holding ? holding.quantity : 0);
+    } catch (err) {}
+  };
+
   const handleBuy = async () => {
     setBuying(true);
     setMessage('');
@@ -51,7 +69,7 @@ export default function StockPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ symbol, quantity }),
       });
@@ -63,10 +81,40 @@ export default function StockPage() {
       setMessage(`Successfully bought ${quantity} share(s) of ${symbol}!`);
       setCash(data.cash);
       localStorage.setItem('cash', data.cash);
+      fetchHolding();
     } catch (err) {
       setMessage('Could not connect to server');
     } finally {
       setBuying(false);
+    }
+  };
+
+  const handleSell = async () => {
+    setSelling(true);
+    setMessage('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/trades/sell', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ symbol, quantity }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage(data.message || 'Sell failed');
+        return;
+      }
+      setMessage(`Successfully sold ${quantity} share(s) of ${symbol}!`);
+      setCash(data.cash);
+      localStorage.setItem('cash', data.cash);
+      fetchHolding();
+    } catch (err) {
+      setMessage('Could not connect to server');
+    } finally {
+      setSelling(false);
     }
   };
 
@@ -92,11 +140,12 @@ export default function StockPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold text-white">{symbol}</h1>
+                  {sharesOwned > 0 && (
+                    <p className="text-zinc-400 text-sm mt-1">You own {sharesOwned} share(s)</p>
+                  )}
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-white">
-                    ${stock.price.toFixed(2)}
-                  </p>
+                  <p className="text-3xl font-bold text-white">${stock.price.toFixed(2)}</p>
                   <p className={`text-sm font-medium mt-1 ${stock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}%
                   </p>
@@ -104,10 +153,8 @@ export default function StockPage() {
               </div>
             </div>
 
-            {/* Buy Panel */}
+            {/* Trade Panel */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-              <h2 className="text-white font-semibold text-lg mb-4">Buy {symbol}</h2>
-
               {message && (
                 <div className={`rounded-lg px-4 py-3 mb-4 text-sm ${message.includes('Successfully') ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>
                   {message}
@@ -127,7 +174,7 @@ export default function StockPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-400">Total Cost</span>
+                  <span className="text-zinc-400">Total</span>
                   <span className="text-white font-semibold">${totalCost.toFixed(2)}</span>
                 </div>
 
@@ -136,16 +183,28 @@ export default function StockPage() {
                   <span className="text-white font-semibold">${cash.toLocaleString()}</span>
                 </div>
 
-                <button
-                  onClick={handleBuy}
-                  disabled={buying || totalCost > cash}
-                  className="w-full bg-green-500 hover:bg-green-400 disabled:bg-zinc-700 disabled:text-zinc-500 text-black font-semibold py-2.5 rounded-lg transition-colors"
-                >
-                  {buying ? 'Processing...' : `Buy ${quantity} share(s) for $${totalCost.toFixed(2)}`}
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleBuy}
+                    disabled={buying || totalCost > cash}
+                    className="flex-1 bg-green-500 hover:bg-green-400 disabled:bg-zinc-700 disabled:text-zinc-500 text-black font-semibold py-2.5 rounded-lg transition-colors"
+                  >
+                    {buying ? 'Buying...' : 'Buy'}
+                  </button>
+                  <button
+                    onClick={handleSell}
+                    disabled={selling || sharesOwned < quantity}
+                    className="flex-1 bg-red-500 hover:bg-red-400 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-semibold py-2.5 rounded-lg transition-colors"
+                  >
+                    {selling ? 'Selling...' : 'Sell'}
+                  </button>
+                </div>
 
                 {totalCost > cash && (
                   <p className="text-red-400 text-sm text-center">Insufficient funds</p>
+                )}
+                {sharesOwned < quantity && sharesOwned > 0 && (
+                  <p className="text-red-400 text-sm text-center">You only own {sharesOwned} share(s)</p>
                 )}
               </div>
             </div>

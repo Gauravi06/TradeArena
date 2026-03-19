@@ -5,9 +5,10 @@ import { PrismaService } from './prisma.service';
 import { AuthModule } from './auth/auth.module';
 import { StocksModule } from './stocks/stocks.module';
 import { TradesModule } from './trades/trades.module';
+import { LeaderboardModule } from './leaderboard/leaderboard.module';
 
 @Module({
-  imports: [AuthModule, StocksModule, TradesModule],
+  imports: [AuthModule, StocksModule, TradesModule, LeaderboardModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
