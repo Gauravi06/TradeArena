@@ -2,12 +2,33 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 const STOCKS = [
+  // Big Tech
   { symbol: 'AAPL', name: 'Apple Inc.' },
   { symbol: 'TSLA', name: 'Tesla Inc.' },
   { symbol: 'NVDA', name: 'NVIDIA Corporation' },
   { symbol: 'AMZN', name: 'Amazon.com Inc.' },
   { symbol: 'GOOGL', name: 'Alphabet Inc.' },
   { symbol: 'MSFT', name: 'Microsoft Corporation' },
+  // High Volatility / Meme Stocks
+  { symbol: 'GME', name: 'GameStop Corp.' },
+  { symbol: 'AMC', name: 'AMC Entertainment' },
+  { symbol: 'PLTR', name: 'Palantir Technologies' },
+  { symbol: 'RIVN', name: 'Rivian Automotive' },
+  { symbol: 'LCID', name: 'Lucid Group' },
+  { symbol: 'SOFI', name: 'SoFi Technologies' },
+  // Crypto-adjacent / Volatile Tech
+  { symbol: 'COIN', name: 'Coinbase Global' },
+  { symbol: 'MSTR', name: 'MicroStrategy Inc.' },
+  { symbol: 'HOOD', name: 'Robinhood Markets' },
+  // EV & Energy
+  { symbol: 'NIO', name: 'NIO Inc.' },
+  { symbol: 'XPEV', name: 'XPeng Inc.' },
+  // Biotech (very volatile)
+  { symbol: 'MRNA', name: 'Moderna Inc.' },
+  { symbol: 'BNTX', name: 'BioNTech SE' },
+  // Airlines (volatile)
+  { symbol: 'AAL', name: 'American Airlines' },
+  { symbol: 'SPCE', name: 'Virgin Galactic' },
 ];
 
 @Injectable()

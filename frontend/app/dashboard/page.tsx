@@ -33,7 +33,7 @@ export default function Dashboard() {
       setTotalValue(data.cash + data.totalValue);
       setTotalPnl(data.totalPnl);
     } catch (err) {
-      console.error('Failed to fetch portfolio');
+      // silently fail
     } finally {
       setLoading(false);
     }
