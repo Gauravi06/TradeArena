@@ -17,6 +17,17 @@ export class TradesController {
     return this.tradesService.buyStock(decoded.userId, body.symbol, body.quantity);
   }
 
+  @Post('sell')
+async sell(
+  @Headers('authorization') auth: string,
+  @Body() body: { symbol: string; quantity: number },
+) {
+  if (!auth) throw new UnauthorizedException();
+  const token = auth.replace('Bearer ', '');
+  const decoded = jwt.verify(token, process.env.JWT_SECRET ?? 'secret') as any;
+  return this.tradesService.sellStock(decoded.userId, body.symbol, body.quantity);
+}
+
   @Get('portfolio')
   async portfolio(@Headers('authorization') auth: string) {
     if (!auth) throw new UnauthorizedException();

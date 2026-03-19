@@ -3,7 +3,8 @@ import { PrismaService } from '../prisma.service';
 import { StocksService } from '../stocks/stocks.service';
 
 @Injectable()
-export class TradesService {
+export class TradesService 
+{
   constructor(
     private prisma: PrismaService,
     private stocksService: StocksService,
@@ -100,4 +101,45 @@ export class TradesService {
       totalPnl: totalValue - totalCost,
     };
   }
+
+  async sellStock(userId: string, symbol: string, quantity: number) {
+  const { price } = await this.stocksService.getPrice(symbol);
+  if (!price) throw new BadRequestException('Invalid stock symbol');
+
+  const holding = await this.prisma.portfolioHolding.findUnique({
+    where: { userId_stockSymbol: { userId, stockSymbol: symbol } },
+  });
+
+  if (!holding) throw new BadRequestException('You do not own this stock');
+  if (holding.quantity < quantity) throw new BadRequestException('Not enough shares');
+
+  // Record the trade
+  await this.prisma.trade.create({
+    data: { type: 'sell', quantity, price, userId, stockSymbol: symbol },
+  });
+
+  // Update or remove holding
+  if (holding.quantity === quantity) {
+    await this.prisma.portfolioHolding.delete({
+      where: { userId_stockSymbol: { userId, stockSymbol: symbol } },
+    });
+  } else {
+    await this.prisma.portfolioHolding.update({
+      where: { userId_stockSymbol: { userId, stockSymbol: symbol } },
+      data: { quantity: holding.quantity - quantity },
+    });
+  }
+
+  // Add cash back
+  const earned = price * quantity;
+  const user = await this.prisma.user.findUnique({ where: { id: userId } });
+  const newCash = (user?.cash ?? 0) + earned;
+  await this.prisma.user.update({
+    where: { id: userId },
+    data: { cash: newCash },
+  });
+
+  return { message: 'Sold successfully', cash: newCash };
+}
+
 }
