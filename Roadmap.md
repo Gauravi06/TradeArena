@@ -57,10 +57,3 @@
 
 ---
 
-## 🛠 Tech Debt / Improvements
-- [ ] Deploy frontend to Vercel
-- [ ] Deploy backend to Railway
-- [ ] Add Redis for leaderboard caching
-- [ ] WebSockets for real-time price updates
-- [ ] Rate limiting on API endpoints
-- [ ] Input validation on all endpoints
