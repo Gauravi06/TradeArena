@@ -58,7 +58,6 @@ TradeArena/
 ```
 
 ---
----
 
 ## Future Scope
 - Price charts with historical data
