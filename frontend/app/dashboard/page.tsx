@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function Dashboard() {
   const router = useRouter();
   const [username, setUsername] = useState('');
-  const [cash, setCash] = useState(0);
+const [cash, setCash] = useState<number>(0);
   const [totalValue, setTotalValue] = useState(0);
   const [totalPnl, setTotalPnl] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ export default function Dashboard() {
       return;
     }
     setUsername(localStorage.getItem('username') || '');
-    setCash(Number(localStorage.getItem('cash')) || 0);
+    setCash(Number(localStorage.getItem('cash') ?? 0));
     fetchPortfolio();
   }, []);
 
@@ -56,7 +56,7 @@ export default function Dashboard() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <p className="text-zinc-400 text-sm">Available Cash</p>
             <p className="text-2xl font-bold text-white mt-1">
-              ${cash.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${(cash ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           </div>
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
@@ -68,7 +68,7 @@ export default function Dashboard() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <p className="text-zinc-400 text-sm">Total P&L</p>
             <p className={`text-2xl font-bold mt-1 ${totalPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {loading ? '...' : `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}`}
+             {loading ? '...' : `${(totalPnl ?? 0) >= 0 ? '+' : ''}$${(totalPnl ?? 0).toFixed(2)}`}
             </p>
           </div>
         </div>
