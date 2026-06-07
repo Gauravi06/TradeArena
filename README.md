@@ -65,6 +65,5 @@ TradeArena/
 - Achievements and rank progression system
 - Daily trading challenges and tournament mode
 - Learning module with guided missions and quizzes
-- Market events that affect stock prices in real time
 
 ---
