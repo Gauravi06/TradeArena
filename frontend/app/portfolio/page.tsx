@@ -36,19 +36,25 @@ export default function Portfolio() {
   }, []);
 
   const fetchPortfolio = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/trades/portfolio', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      setPortfolio(data);
-    } catch (err) {
-      console.error('Failed to fetch portfolio');
-    } finally {
-      setLoading(false);
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch('http://localhost:3001/trades/portfolio', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) {         
+      setPortfolio(null);
+      return;
     }
-  };
+
+    const data = await res.json();
+    setPortfolio(data);
+  } catch (err) {
+    console.error('Failed to fetch portfolio');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-black px-6 py-10">
