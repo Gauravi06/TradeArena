@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import StockChart from '@/components/stockchart';
+
 
 type StockData = {
   price: number;
@@ -152,6 +154,9 @@ export default function StockPage() {
                 </div>
               </div>
             </div>
+
+            {/* Chart */}
+            {stock && <StockChart symbol={symbol} currentPrice={stock.price} />}
 
             {/* Trade Panel */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
