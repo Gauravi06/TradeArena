@@ -79,23 +79,28 @@ export class StocksService {
     }
   }
   async getHistoricalData(symbol: string, days: number = 7): Promise<any[]> {
-    try {
-      const now = Math.floor(Date.now() / 1000);
-      const historicalData: any[] = [];      
-      let basePrice = 150;
-      
-      for (let i = days * 24; i >= 0; i -= 24) {
-        basePrice = basePrice * (0.98 + Math.random() * 0.04);
-        historicalData.push({
-          time: now - (i * 3600),
-          value: Math.round(basePrice * 100) / 100,
-        });
-      }
-      
-      return historicalData;
-    } catch (err) {
-      console.error('Failed to fetch historical data:', err);
-      return [];
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const historicalData: any[] = [];
+    
+    // Use symbol to seed consistent random data
+    const seed = symbol.charCodeAt(0) + symbol.charCodeAt(1);
+    let basePrice = 150;
+    
+    for (let i = days * 24; i >= 0; i -= 24) {
+      // Deterministic "random" based on seed + iteration
+      const pseudo = Math.sin(seed * i) * 10000;
+      basePrice = basePrice * (0.98 + (pseudo % 0.04));
+      historicalData.push({
+        time: now - (i * 3600),
+        value: Math.round(basePrice * 100) / 100,
+      });
     }
+    
+    return historicalData;
+  } catch (err) {
+    console.error('Failed to fetch historical data:', err);
+    return [];
   }
+}
 }
