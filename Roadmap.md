@@ -11,7 +11,7 @@
 
 ---
 
-## Phase 2 — Core Enhancements (🔄 In Progress)
+## Phase 2 — Core Enhancements (In Progress)
 - ✅ **Price charts for each stock** (7-day historical data with SVG visualization)
 - ✅ **Search and filter on stocks page** (with highlighted results)
 - ✅ **Currency toggle (USD / INR)** (₹ symbol and 1 USD = 83 INR conversion)
