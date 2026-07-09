@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCurrency } from "@/context/CurrencyContext";
 
 export default function Navbar() {
   const router = useRouter();
+  const { currency, toggleCurrency } = useCurrency();
   const [username, setUsername] = useState('');
 
   useEffect(() => {
@@ -47,6 +49,15 @@ export default function Navbar() {
             </div>
             <span className="text-white text-sm font-medium">{username}</span>
           </div>
+          
+          {/* Currency Toggle Button */}
+          <button
+            onClick={toggleCurrency}
+            className="bg-zinc-800 border border-zinc-700 hover:border-green-500 text-white text-sm font-semibold px-3 py-1.5 rounded-full transition-colors"
+          >
+            {currency}
+          </button>
+          
           <button
             onClick={handleLogout}
             className="text-zinc-400 hover:text-white text-sm transition-colors"
